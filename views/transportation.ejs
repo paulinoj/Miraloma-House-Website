@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+<% include head %>
+
+<body>
+
+<div class="container">
+
+<% include navbar %>
+
+<div id="content">
+
+<script type="text/javascript">
+
+function addRow(a,b,c,d,tableID) {
+  var r  = document.createElement('tr');
+  var ca = document.createElement('td');
+  var cb = document.createElement('td');
+  var cc = document.createElement('td');
+  var cd = document.createElement('td');
+
+  ca.style.color = "black";
+  cb.style.color = "black";
+  cc.style.color = "black";
+
+  cd.className = 'blinking_text';
+  var ta = document.createTextNode(a);
+  var tb = document.createTextNode(b);
+  var tc = document.createTextNode(c); 
+  var t  = document.getElementById(tableID);
+
+  var tempArray = d.split(" ");
+  for (var i = 0; i < tempArray.length; i++) {
+    var timeSpan = document.createElement('span');
+    var unit = "";
+    if (tempArray[i] == "")
+      unit = "";
+    else
+      unit = " min";
+    timeSpan.innerHTML = tempArray[i] + unit;
+    timeSpan.style.padding = '0px 30px 0px 0px'
+    cd.appendChild(timeSpan);
+  }
+
+  ca.appendChild(ta);
+  cb.appendChild(tb);
+  cc.appendChild(tc);
+
+  r.appendChild(ca);
+  r.appendChild(cb);
+  r.appendChild(cc);
+  r.appendChild(cd); 
+
+  r.className="warning";
+
+  t.tBodies[0].appendChild(r);
+}
+
+
+
+var oldDepartTimes = "John";
+var newDepartTimes = "";
+var newRoute = "";
+
+function isSame(oldString, newString) {
+  return (oldString == newString);
+}
+
+
+// The function getDepartureTimes makes XMLHttpRequests to /departuretimes
+// and includes a stopID as a parameter in the request.
+// The node server then downloads real time departure information from the 511.org API
+// for the bus stop corresponding to the stopID and sends it back as XML data.
+
+
+function getDepartureTimes(stopID, stopName)
+{
+  return function () { 
+     var xmlhttp = new XMLHttpRequest();
+
+     if (!window.location.origin)
+       window.location.origin = window.location.protocol+"//"+window.location.host;    
+
+     xmlhttp.open("GET", window.location.origin + "/departureTimes?stopID=" + stopID, true);
+
+     xmlhttp.onreadystatechange=function(){
+        if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+
+           xmlDoc=xmlhttp.responseXML; 
+
+   
+           var x=xmlDoc.getElementsByTagName("Route");
+           
+           var tableSpot = "table" + stopID;
+
+           for (var i = 0; i < x.length; i++) {
+
+             var routeName = x[i].getAttribute("Name");
+
+
+             if (routeName == stopName) {
+
+               newRoute = routeName;
+
+               var stopDescription = x[i].getElementsByTagName("Stop")[0].getAttribute("name");
+               var routeDirection = x[i].getElementsByTagName("RouteDirection")[0].getAttribute("Name");
+               var departTimes = "";
+               var y = x[i].getElementsByTagName("DepartureTime");
+               if (y.length != 0) {
+ 
+                 departTimes = departTimes + y[0].childNodes[0].nodeValue;
+                 for (var n = 1; n < y.length; n++) 
+                   departTimes = departTimes + " " + y[n].childNodes[0].nodeValue;
+               }
+               newDepartTimes = departTimes;
+
+
+               if (!(isSame(oldDepartTimes, newDepartTimes))) {
+
+    	             var timeTable = document.getElementById(tableSpot);
+                   timeTable.deleteRow(-1);
+                   addRow(newRoute, stopDescription, routeDirection, newDepartTimes, tableSpot);
+                   oldDepartTimes = newDepartTimes;
+               }
+
+             }
+           }
+           
+        }
+     }      
+     xmlhttp.send();
+  }
+}
+
+
+
+// FOLLOWING CODE PURPOSELY REPETITIVE -- TOO SLOW WHEN PLACED IN LOOP
+
+getDepartureTimes("16668", "36-Teresita")();
+getDepartureTimes("16666", "36-Teresita")();
+getDepartureTimes("13697", "44-OShaughnessy")();
+getDepartureTimes("14387", "36-Teresita")();
+getDepartureTimes("15247", "36-Teresita")();
+
+// Make requests for bus departure time information every 10 seconds
+
+setInterval(getDepartureTimes("16666", "36-Teresita"), 10000);
+setInterval(getDepartureTimes("16668", "36-Teresita"), 10000);
+setInterval(getDepartureTimes("13697", "44-OShaughnessy"), 10000);
+setInterval(getDepartureTimes("14387", "36-Teresita"), 10000);
+setInterval(getDepartureTimes("15247", "36-Teresita"), 10000);
+
+
+</script>
+
+
+<p class = "clearfix" style = "bottom-padding:200"></p>
+
+
+<div class="boxheader"> 
+  <div class="panel-heading">
+    <span style="font-family: lobster, cursive">Transportation:</span>  General
+  </div>
+</div>
+
+<div class = "panel panel-info panel-body">
+
+  <h2 style = "margin-top: 0px">Muni Metro</h2>
+ 
+    <div class="captionRight">
+      <a href="images/ForestHill.jpg">
+        <img src="images/ForestHill.jpg" alt="" width = "200" height = "180"><br>
+      </a>
+      Forest Hill Station
+    </div>
+
+    <p style = "margin-bottom: 20px">
+
+      The Muni Metro will take you to downtown San Francisco in one direction and out to Ocean Beach in the other.  The closest Muni Metro Station to us is Forest Hill Station.
+
+      <div class="captionLeft" style="margin-left: 0px">
+        <a href="https://www.sfmta.com/maps/muni-metro-map">
+          <img src="images/Muni_logo.jpg" alt="" width = "150" style="margin-left: 0px"><br>
+        </a>
+        CLICK FOR MUNI MAP
+      </div>
+
+    </p>
+
+    <p class = "clearfix">
+    </p>
+
+
+  <h2>Bay Area Rapid Transit (BART)</h2>
+
+    <div class="captionRight">
+      <a href="images/BART.jpg">
+        <img src="images/BART.jpg" alt="" width = "200" height = "180"><br>
+      </a>
+      Glen Park BART Station
+    </div>
+
+    <p style = "margin-bottom: 20px">
+
+      The BART train will take you to downtown San Francisco, with stops at Civic Center, Powell Street, Montgomery Street, and the Embarcadero, as well as to destinations in the East Bay and the Peninsula (most notably SFO Airport).  The closest BART station to us is the Glen Park BART Station.
+ 
+      <div class="captionLeft" style="margin-left: 0px">
+        <a href="https://www.bart.gov/stations">
+          <img src="images/Bart-logo.png" alt="" width = "150" style="margin-left: 0px"><br>
+        </a>
+        CLICK FOR BART MAP
+      </div>
+
+    </p>
+
+    <p class = "clearfix">
+    </p>
+
+</div>
+
+<div class="boxheader"> 
+  <div class="panel-heading">
+    <span style="font-family: lobster, cursive">Transportation:</span>  How to Get Downtown
+  </div>
+</div>
+
+
+<div class = "panel panel-info panel-body" style = "MARGIN-BOTTOM: 0px">
+
+  <h2 style = "margin-top: 0px">Method 1 - Via 36 Bus to Forest Hill Muni Station</h2>
+
+    <div class="captionRight">
+      <a href="images/stopsign.jpg">
+        <img src="images/stopsign.jpg" alt="" width = "200" height = "180"><br>
+      </a>
+      Bus stop sign on pavement
+    </div>
+
+    <p>
+     Take the Inbound 36-Teresita Bus that runs along our street to Forest Hill Station.  At Forest Hill, you can transfer to a downtown Muni train, with stops at Castro, Church, Van Ness, Civic Center, Powell, Montgomery and Embarcadero.  Fare: $2.25 for bus; free transfer to Muni train with bus transfer ticket (be sure to get the transfer from the driver when you board the bus).  Total Travel Time:  ~30 minutes.  
+    </p>
+
+    <p>
+      The stop for the bus going to Forest Hill is on our side of the street, three houses to the left after you exit the house.  Look for the yellow "Coach Stop" sign on the road (Stop ID 16668), and signal to the bus driver when you see the bus arriving so he knows to stop. 
+    </p>
+
+    <p class="clearfix">
+      Real-time bus departure times are provided below.
+    </p>
+
+    <table id="table16668" class="table table-striped table-hover" style="margin-bottom:30px">
+     <tr><td>Route Name</td><td>Stop</td><td>Destination</td><td>Next Buses Depart In ...</td></tr>
+     <tr class = "warning"><td>*</td><td>*</td><td>*</td><td>*</td></tr>
+    </table>
+
+</div>
+
+<div class = "panel panel-info panel-body" style = "MARGIN-BOTTOM: 0px">
+
+  <h2 style = "margin-top: 0px">Method 2 - Via 44 Bus to Forest Hill Muni Station<br>(bus stop farther away but more frequent runs)</h2>
+
+    <p>
+
+      <div class="captionRight">
+        <a href="images/44Stop.jpg">
+          <img src="images/44Stop.jpg" alt="" width = "200" height = "180"><br>
+        </a>
+        Bus stop for 44 O'Shaughnessy Bus
+      </div>
+
+      If you're headed to the Forest Hill Muni Metro Station and you don't want to wait for the #36 Bus, you can take the #44 Bus instead (which runs more frequently).  Fare: $2.25 for bus; free transfer to Muni train with bus transfer ticket (be sure to get the transfer from the driver when you board the bus).  Total Travel Time to downtown (not including the walk to the bus stop):  ~25 minutes.  The #44 Bus also goes to Golden Gate Park and the Academy of Sciences before continuing on to the Richmond District.
+
+    </p>
+
+    <p>
+      The stop for the #44 Bus is on the corner of BOSWORTH and ELK Street (less than a 10 minute walk).  To get there, exit our house and turn left.  At STILLINGS, turn left again.  At CONGO, turn left again.  CONGO curves down to the corner of BOSWORTH and ELK, where the bus stop is located.  Look for the Muni bus shelter pictured at right.
+    </p>
+
+    <p class="clearfix">
+      Real-time bus departure times are provided below.
+    </p>
+
+    <table id="table13697" class="table table-striped table-hover" style="margin-bottom:30px">
+     <tr><td>Route Name</td><td>Stop</td><td>Destination</td><td>Next Buses Depart In ...</td></tr>
+     <tr class = "warning"><td>*</td><td>*</td><td>*</td><td>*</td></tr>
+    </table>
+
+</div>
+
+<div class = "panel panel-info panel-body">
+
+  <h2 style = "margin-top: 0px">Method 3 - Via 36 Bus to Glen Park BART Station (fastest but most expensive)</h2>
+
+    <div class="captionRight">
+        <a href="images/Bus36.jpg">
+          <img src="images/Bus36.jpg" alt="" width = "200" height = "180" ><br>
+        </a>
+        36-Teresita Bus stops by our house
+    </div>
+
+    <p>
+      Take the Outbound 36-Teresita Bus that runs along our street to the Glen Park BART Station (Bus Stop Name:  Diamond and Bosworth Street).  At Glen Park Station, you can transfer to a downtown BART train, with stops at Civic Center, Powell, Montgomery and Embarcadero.  Because BART is a separate system from MUNI, you will need to pay an additional fare upon transferring.  Fare:  $2.25 for bus, $1.85 for BART.  Total Travel Time: ~25 minutes.  If you wish to save the bus fare, you can walk to the BART station from our house in less than 15 minutes, but the steep hills you face on the way back to the house make a return trip on foot physically taxing.
+    </p>
+
+
+    <p>
+      The stop for the bus going to Glen Park BART is just across the street from our house at the corner of FOERSTER and TERESITA.  Look for the yellow "Coach Stop" sign on the road (Stop ID 16666), and signal to the bus driver when you see the bus arriving so he knows to stop. 
+    </p>
+
+    <p class="clearfix">
+      Real-time bus departure times are provided below.
+    </p>
+
+    <table id="table16666" class="table table-striped table-hover" style="margin-bottom:30px">
+     <tr><td>Route Name</td><td>Stop</td><td>Destination</td><td>Next Buses Depart In ...</td></tr>
+     <tr class = "warning"><td>*</td><td>*</td><td>*</td><td>*</td></tr>
+    </table>
+
+</div>
+
+
+<div class="boxheader"> 
+  <div class="panel-heading">
+    <span style="font-family: lobster, cursive">Transportation:</span>  Coming Back to the House
+  </div>
+</div>
+
+
+<div class = "panel panel-info panel-body" style = "MARGIN-BOTTOM: 0px">
+
+  <h2 style = "margin-top: 0px">From Glen Park BART Station</h2>
+
+    <p>
+
+      <div class="captionRight">
+        <a href="images/MailDepot.jpg">
+          <img src="images/MailDepot.jpg" alt="" width = "200" height = "180"><br>
+        </a>
+        Bus stop on sidewalk<br>in front of Mail Depot
+      </div>
+
+      If you're leaving the BART station, the stop for the 36-Teresita Bus coming back to the house is directly opposite the BART station on Diamond Street, in front of Mail Depot.  Take it and get off at TERESITA and FOERSTER.
+
+    </p>
+
+    <table id="table14387" class="table table-striped table-hover" style="margin-bottom:30px">
+     <tr><td>Route Name</td><td>Stop</td><td>Destination</td><td>Next Buses Depart In ...</td></tr>
+     <tr class = "warning"><td>*</td><td>*</td><td>*</td><td>*</td></tr>
+    </table>
+
+</div>
+
+<div class = "panel panel-info panel-body">
+
+
+  <h2 style = "margin-top: 0px">From Forest Hill Station</h2>
+  <p>
+
+    <div class="captionRight">
+      <a href="images/ForestHill.jpg">
+        <img src="images/ForestHill.jpg" alt="" width = "200" height = "180"><br>
+      </a>
+      Bus back home arrives in<br>front of Forest Hill Station
+    </div>
+
+    If you're leaving the Forest Hill MUNI Metro Station, the #36 Bus coming back to the house stops right at the bottom of the steps in front of the station.  Take it and get off at TERESITA and FOERSTER.
+
+  </p>
+
+  <table id="table15247" class="table table-striped table-hover" style="margin-bottom:30px">
+   <tr><td>Route Name</td><td>Stop</td><td>Destination</td><td>Next Buses Depart In ...</td></tr>
+   <tr class = "warning"><td>*</td><td>*</td><td>*</td><td>*</td></tr>
+  </table>
+
+</div>
+
+
+<div class="boxheader"> 
+  <div class="panel-heading">
+    <span style="font-family: lobster, cursive">Transportation:</span>  Taxi
+  </div>
+</div>
+
+<div class = "panel panel-info panel-body">
+
+  <h2 style = "margin-top: 0px">Desoto Cab Company - 415-970-1300</h2>
+
+  <p>
+    Cabs have a reputation for being unreliable in this area, so you might want to give yourself some leeway when calling.  People in the neighborhood seem happy using Uber and Lyft for their transporation needs.
+  </p>
+
+  <p>
+    <a href="http://desotogo.com/">CLICK HERE FOR WEBSITE OF DESOTO CAB COMPANY</a>
+  </p>
+
+</div>
+
+<div class="boxheader"> 
+  <div class="panel-heading">
+    <span style="font-family: lobster, cursive">Transportation:</span>  Driving
+  </div>
+</div>
+
+<div class = "panel panel-info panel-body">
+
+  <p>
+    Street parking in our neighborhood is free and easy to find.  There are no restrictions on parking on our block, but on some nearby streets parking may be restricted on certain days of the week due to street cleaning.  Please be mindful of any street signs, and be sure not to block driveways.
+  </p>
+
+  <p>
+    NOTE:  If you park on an incline in San Francisco, you MUST curb your wheels (turn your front wheels towards the curb when facing downhill, turn your front wheels away from the curb when facing uphill).  You risk getting a ticket otherwise.
+  </p>
+
+  <p>
+    Golden Gate Bridge:  You must pay a toll to drive over the bridge, but there are no toll collectors.  Please see the following link for information about paying your toll.    
+  </p>
+
+  <p>
+    <a href="http://goldengate.org/tolls/">CLICK HERE TO PAY GOLDEN GATE BRIDGE TOLL</a>
+  </p>
+
+</div>
+
+<script src="../bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+<script src="../assets/js/bootswatch.js"></script>
+
+</body>
+
+</html>

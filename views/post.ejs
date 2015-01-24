@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  
+<% include head %>
+
+<body>
+
+<div class="container">
+
+<% include navbar %>
+
+<div id="content">
+
+<div class="boxheader"> 
+  <div class="panel-heading">
+    <span style="font-family: lobster, cursive">Guest Comments</span>
+  </div>
+</div>
+
+<div class = "panel panel-info panel-body">
+
+	<p>
+		We would be grateful if you'd share any suggestions you might have (restaurants, things to do, etc.) with our future guests, especially any tips relevant to those staying in this neighborhood.
+	</p>
+
+	<% include messages %>
+
+	<form action='/post' method='post'>
+
+		<p>
+			<input type='text' name='entry[title]' placeholder='Title' style='width:50%' />
+		</p>
+
+		<p>
+			<textarea name='entry[body]' placeholder='Body' style='width:50%'></textarea>
+		</p>
+
+		<p>
+			<textarea name='entry[name]' placeholder='Name' style='width:50%'></textarea>
+		</p>			
+
+		<p>
+			<input type='submit' value='Post' />
+		</p>
+
+	</form>
+
+	<% entries.forEach(function(entry) { %>
+
+		<div class = 'entry'>
+
+			<div class="boxheader"> 
+			  <div class="panel-heading">
+				<h3><%= entry.title %></h3>
+			  </div>
+			</div>
+			
+			<div class = "panel panel-info panel-body">					
+				<p><%= entry.body %></p>
+				<p>Posted by <%= entry.username %></p>
+				<p><%= entry.date %></p>
+			</div>
+
+		</div>
+
+	<% }) %>
+
+</div>
+
+</body>
+
+</html>
